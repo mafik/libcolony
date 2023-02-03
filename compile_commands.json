@@ -1,0 +1,55 @@
+[
+  {
+    "directory": "/home/maf/Do opublikowania/libcolony/libcolony",
+    "file": "src/colony_js.cc",
+    "output": "/tmp/emscripten_temp_fpdoflat/colony_js_0.o",
+    "arguments": [
+      "/home/maf/emsdk/upstream/bin/clang-17",
+      "-xc++",
+      "src/colony_js.cc",
+      "-o",
+      "/tmp/emscripten_temp_fpdoflat/colony_js_0.o",
+      "--driver-mode=g++",
+      "--target=wasm32-unknown-emscripten",
+      "-fignore-exceptions",
+      "-fvisibility=default",
+      "-mllvm",
+      "-combiner-global-alias-analysis=false",
+      "-mllvm",
+      "-enable-emscripten-sjlj",
+      "-mllvm",
+      "-disable-lsr",
+      "-D",
+      "EMSCRIPTEN",
+      "--sysroot=/home/maf/emsdk/upstream/emscripten/cache/sysroot",
+      "-Xclang",
+      "-iwithsysroot/include/fakesdl",
+      "-Xclang",
+      "-iwithsysroot/include/compat",
+      "-O3",
+      "-std=c++20",
+      "-c",
+      "--target=wasm32-unknown-emscripten"
+    ]
+  },
+  {
+    "directory": "/home/maf/Do opublikowania/libcolony/libcolony",
+    "file": "src/sdl.cc",
+    "output": "/tmp/sdl-d3f54b.o",
+    "arguments": [
+      "/usr/lib/llvm-14/bin/clang",
+      "-xc++",
+      "src/sdl.cc",
+      "--driver-mode=g++",
+      "-o",
+      "demo",
+      "-std=c++20",
+      "-D",
+      "_REENTRANT",
+      "-I",
+      "/usr/include/SDL2",
+      "-lSDL2",
+      "--target=x86_64-pc-linux-gnu"
+    ]
+  }
+]

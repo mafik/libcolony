@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# LibColony build artifacts
+colony.js
+colony.wasm
+demo_sdl
+compile_colony_js.json
+compile_demo.json
