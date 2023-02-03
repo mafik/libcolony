@@ -1,6 +1,6 @@
-# LibColony
-
 <img align="right" src=thumb.jpg style="float: right; max-width: 50%">
+
+# LibColony
 
 LibColony is a C++ (and JavaScript) library for task sheduling, perfect for colony simulation games like Rimworld or Dwarf Fortress. LibColony reduces the need for micromanagement, increases autonomy of colonists and prevents spirals of death. As a result the player can focus on planning rather than firefighting.
 
