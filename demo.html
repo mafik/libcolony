@@ -1,0 +1,373 @@
+<!doctype html>
+<html>
+  <p>Note: this demo only works when opened using HTTP protocol. Opening it directly using 'file://' won't work. Start a http server (for example using <code>python3 -m http.server 8000</code>) to view it!</p>
+    <img src="demo_spritesheet.png" id="spritesheet" style="display: none;">
+  <canvas id="canvas" width="640" height="480"></canvas><br>
+  Stage: <select id="stage">
+    <option value="small">Random Small</option>
+    <option value="medium">Random Medium</option>
+    <option value="large">Random Large</option>
+    <option value="huge">Random Huge</option>
+    <option value="insane">Random Insane</option>
+    <option value="row">Row</option>
+    <option value="skewed row">Skewed row</option>
+    <option value="that guy">That guy</option>
+    <option value="circle">Circle</option>
+    <option value="square">Square</option>
+    <option value="inversed square">Inversed square</option>
+  </select>
+  <script>
+    var Module = {
+      onRuntimeInitialized: function() {
+        window.requestAnimationFrame(tick);
+      }
+    };
+
+    let canvas = document.getElementById('canvas');
+    let spritesheet = document.getElementById('spritesheet');
+    let ctx = canvas.getContext('2d', {alpha:false});
+    ctx.imageSmoothingEnabled = false;
+    let characters = [];
+    let tasks = [];
+
+    let margin = 40;
+
+    function stage_clear() {
+      characters.length = 0;
+      tasks.length = 0;
+    }
+
+    function stage_random(n_characters, n_tasks) {
+      stage_clear();
+      for (let i = 0; i < n_characters; i++) {
+        characters.push({
+          x: Math.round(Math.random() * (canvas.width - 2 * margin) + margin),
+          y: Math.round(Math.random() * (canvas.height - 2 * margin) + margin)
+        });
+      }
+
+      for (let i = 0; i < n_tasks; i++) {
+        let t = 1 + Math.random() * 2;
+        tasks.push({
+          x: Math.round(Math.random() * (canvas.width - 2 * margin) + margin),
+          y: Math.round(Math.random() * (canvas.height - 2 * margin) + margin),
+          t: t,
+          tmax: t
+        });
+      }
+    }
+
+    function stage_row() {
+      stage_clear();
+      let n = 15;
+      for (let i = 0; i < n; i++) {
+        characters.push({
+          x: margin,
+          y: margin + (canvas.height - 2 * margin) * i / (n-1)
+        });
+      }
+
+      for (let i = 0; i < n; i++) {
+        tasks.push({
+          x: canvas.width - margin,
+          y: margin + (canvas.height - 2 * margin) * i / (n-1),
+          t: 2,
+          tmax: 2
+        });
+      }
+    }
+
+    function stage_skew() {
+      stage_clear();
+      let n = 15;
+      for (let i = 0; i < n; i++) {
+        characters.push({
+          x: margin + (canvas.width - 2 * margin) / 4 * i / (n),
+          y: margin + (canvas.height - 2 * margin) / 2 * i / (n-1)
+        });
+      }
+
+      for (let i = 0; i < n; i++) {
+        tasks.push({
+          x: canvas.width * 3 / 4 + (canvas.width - 2 * margin) / 4 * (i+1) / (n),
+          y: margin + (canvas.height - 2 * margin) / 2 * (i / (n-1) + 1),
+          t: 2,
+          tmax: 2
+        });
+      }
+    }
+
+    function stage_that_guy() {
+      stage_clear();
+      let n = 10;
+      for (let i = 0; i < n; i++) {
+        characters.push({
+          x: margin,
+          y: margin + (canvas.height - 2*margin) * i / (n-1)
+        });
+      }
+      characters.push({
+        x: canvas.width - margin,
+        y: margin
+      });
+      for (let i = 0; i < n; i++) {
+        tasks.push({
+          x: canvas.width - margin,
+          y: margin + (canvas.height - 2*margin) * i / (n-1),
+          t: 1,
+          tmax: 1
+        });
+      }
+    }
+
+    function stage_circle() {
+      stage_clear();
+      let n = 50;
+      let cx = canvas.width / 2;
+      let cy = canvas.height / 2;
+      let r = (Math.min(cx, cy) - margin);
+      for (let i = 0; i < n; i++) {
+        let x = Math.round(cx + r * Math.cos(i / n * Math.PI * 2));
+        let y = Math.round(cy + r * Math.sin(i / n * Math.PI * 2));
+        characters.push({
+          x: x,
+          y: y
+        });
+      }
+      tasks.push({
+        x: cx,
+        y: cy,
+        t: 5,
+        tmax: 5
+      });
+    }
+
+    function stage_square() {
+      stage_clear();
+      let n = 10;
+      let cx = canvas.width / 2;
+      let cy = canvas.height / 2;
+      let r = (Math.min(cx, cy) - margin);
+      for (let i = 0; i < n; i++) {
+        characters.push({
+          x: cx + r - 2*i/(n) * r,
+          y: cy + r
+        });
+        characters.push({
+          x: cx - r + 2*i/(n) * r,
+          y: cy - r
+        });
+        characters.push({
+          y: cy + r - 2*(i+1)/(n) * r,
+          x: cx + r
+        });
+        characters.push({
+          y: cy - r + 2*(i+1)/(n) * r,
+          x: cx - r
+        });
+      }
+      tasks.push({
+        x: cx,
+        y: cy,
+        t: 5,
+        tmax: 5
+      });
+    }
+
+    function stage_square2() {
+      stage_clear();
+      let n = 10;
+      let cx = canvas.width / 2;
+      let cy = canvas.height / 2;
+      let r = (Math.min(cx, cy) - margin);
+      for (let i = 0; i < n; i++) {
+        tasks.push({
+          x: cx + r - 2*i/(n) * r,
+          y: cy + r,
+          t: 2,
+          tmax: 2
+        });
+        tasks.push({
+          x: cx - r + 2*i/(n) * r,
+          y: cy - r,
+          t: 2,
+          tmax: 2
+        });
+        tasks.push({
+          y: cy + r - 2*(i+1)/(n) * r,
+          x: cx + r,
+          t: 2,
+          tmax: 2
+        });
+        tasks.push({
+          y: cy - r + 2*(i+1)/(n) * r,
+          x: cx - r,
+          t: 2,
+          tmax: 2
+        });
+      }
+      for (let i = 0; i < 4*n; i++) {
+        characters.push({
+          x: cx,
+          y: cy
+        });
+      }
+    }
+
+    let stages = {
+      'small': () => stage_random(10, 50),
+      'medium': () => stage_random(50, 100),
+      'large': () => stage_random(150, 500),
+      'huge': () => stage_random(250, 1000),
+      'insane': () => stage_random(500, 2000),
+      'row': () => stage_row(),
+      'skewed row': () => stage_skew(),
+      'that guy': () => stage_that_guy(),
+      'circle': () => stage_circle(),
+      'square': () => stage_square(),
+      'inversed square': () => stage_square2(),
+    }
+
+    let stage_selector = document.getElementById('stage');
+    stage_selector.addEventListener('change', (e) => {
+      stages[e.target.value]();
+    });
+
+    let last_time = 0;
+    let time_history = [];
+    function tick(time) {
+      window.requestAnimationFrame(tick);
+      time /= 1000;
+      let dt = time - last_time;
+      last_time = time;
+
+      let assignments = [];
+      for (let character_i = 0; character_i < characters.length; character_i++) {
+        for (let task_i = 0; task_i < tasks.length; ++task_i) {
+          let c = characters[character_i];
+          let t = tasks[task_i];
+          let dist = Math.sqrt((c.x - t.x) * (c.x - t.x) + (c.y - t.y) * (c.y - t.y));
+          let cost = Module.compute_cost({ travel_time: dist, work_time: t.t });
+          assignments.push({ character: character_i, task: task_i, cost: cost });
+        }
+      }
+      var startTime = performance.now()
+      assignments = Module.optimize(assignments);
+      var endTime = performance.now()
+      time_history.push(endTime - startTime);
+      if (time_history.length > 50) {
+        time_history.shift();
+      }
+
+      for (let i = 0; i < characters.length; i++) {
+        characters[i].animation = 'idle';
+      }
+
+      for (let i = 0; i < assignments.length; i++) {
+        let a = assignments[i];
+        let c = characters[a.character];
+        let t = tasks[a.task];
+        let dx = t.x - c.x;
+        let dy = t.y - c.y;
+        let d = Math.sqrt(dx * dx + dy * dy);
+        let range = 10 * dt;
+        if (d > range) {
+          dx /= d;
+          dy /= d;
+          c.x += dx * range;
+          c.y += dy * range;
+          if (dx < 0) {
+            c.animation = 'run-left';
+          } else {
+            c.animation = 'run-right';
+          }
+        } else if (d == 0) {
+          t.t -= dt;
+          c.animation = 'work';
+        } else {
+          c.x = t.x;
+          c.y = t.y;
+        }
+      }
+
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#45a24a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      for (let i = 0; i < assignments.length; i++) {
+        let a = assignments[i];
+        let c = characters[a.character];
+        let t = tasks[a.task];
+        ctx.beginPath();
+        ctx.moveTo(c.x, c.y);
+        ctx.lineTo(t.x, t.y);
+        ctx.stroke();
+      }
+      // remove completed tasks
+      tasks = tasks.filter(t => t.t > 0);
+      ctx.fillStyle = '#a26e23';
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      for (let i = 0; i < tasks.length; i++) {
+        let t = tasks[i];
+        let r = t.t * 2;
+        ctx.beginPath(t.x, t.y);
+        ctx.arc(t.x, t.y, r, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        if (t.t < t.tmax) {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(t.x - 17, t.y - 33, 34, 6);
+          ctx.fillStyle = '#a26e23';
+          ctx.fillRect(t.x - 16, t.y - 32, 32 * t.t / t.tmax, 4);
+        }
+      }
+      for (let i = 0; i < characters.length; i++) {
+        let c = characters[i];
+        let cx = Math.round(c.x);
+        let cy = Math.round(c.y);
+        if (c.animation == 'run-right') {
+          let frame = (Math.floor(time * 10) + i) % 8;
+          ctx.drawImage(spritesheet, frame * 32, 3 * 32, 32, 32, cx - 16, cy - 32, 32, 32);
+        } else if (c.animation == 'run-left') {
+          let frame = (Math.floor(time * 10) + i) % 8;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(-1, 1);
+          ctx.drawImage(spritesheet, frame * 32, 3 * 32, 32, 32, - 16, - 32, 32, 32);
+          ctx.restore();
+        } else if (c.animation == 'work') {
+          let frame = (Math.floor(time * 10) + i) % 8;
+          ctx.drawImage(spritesheet, frame * 32, 8 * 32, 32, 32, cx - 16, cy - 32, 32, 32);
+        } else if (c.animation == 'idle') {
+          let frame = (Math.floor(time * 10) + i) % 8;
+          ctx.drawImage(spritesheet, frame * 32, 5 * 32, 32, 32, cx - 16, cy - 32, 32, 32);
+        }
+      }
+
+      ctx.fillStyle = 'black';
+      let maxTimeHistory = Math.max(...time_history);
+      let meanTimeHistory = time_history.reduce((a, b) => a + b, 0) / time_history.length;
+
+      function drawText(text, x, y) {
+        let width = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillRect(x - 2, y - 11, width + 4, 14);
+        ctx.fillStyle = 'black';
+        ctx.fillText(text, x, y);
+      }
+      drawText('Optimization time over last ' + time_history.length + ' frames: mean ' + meanTimeHistory.toFixed(1) + " ms, max " + maxTimeHistory.toFixed(1) + " ms", 10, 20);
+      drawText('Tasks remaining: ' + tasks.length, 10, 40);
+      drawText('Characters: ' + characters.length, 10, 60);
+
+      if (tasks.length == 0) {
+        stages[stage_selector.value]();
+      }
+    }
+  </script>
+  <script src="colony.js"></script>
+</html>
