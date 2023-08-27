@@ -56,7 +56,7 @@ executable.
 
 ## Complexity
 
-Task assignment relies on the Hungarian algorithm whith is O(n^3).
+Task assignment relies on the Hungarian algorithm which is O(n^3).
 LibColony offers an optional optimization where restricting
 the assignment to only top-n tasks reduces this to O(n^2). Assignment algorithm
 is pretty optimized so even the O(n^3) variant should work fine for games with
